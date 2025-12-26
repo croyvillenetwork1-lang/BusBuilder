@@ -1,0 +1,77 @@
+// Simple bus shapes
+const models = {
+  "StreetDeck": { length: 4.8, height: 2.9, width: 1.3 },
+  "Enviro200": { length: 3.6, height: 2.6, width: 1.3 },
+  "Enviro400": { length: 4.6, height: 3.0, width: 1.3 }
+};
+
+const operators = {
+  "First Bradford": { exterior: "#e4007f", accent: "#ffffff" },
+  "Keighley Bus Co": { exterior: "#005baa", accent: "#ffffff" },
+  "Bee Network": { exterior: "#ffdd00", accent: "#000000" }
+};
+
+const routes = {
+  "X11": "X11 Bradford",
+  "72": "72 Leeds",
+  "25": "25 City Centre"
+};
+
+// UI elements
+const modelSelect = document.getElementById("busModel");
+const operatorSelect = document.getElementById("operator");
+const routeSelect = document.getElementById("route");
+const exteriorColor = document.getElementById("exteriorColor");
+const accentColor = document.getElementById("accentColor");
+const destText = document.getElementById("destText");
+
+// Populate dropdowns
+Object.keys(models).forEach(m => modelSelect.innerHTML += `<option>${m}</option>`);
+Object.keys(operators).forEach(o => operatorSelect.innerHTML += `<option>${o}</option>`);
+Object.keys(routes).forEach(r => routeSelect.innerHTML += `<option>${r}</option>`);
+
+// THREE.js setup
+const canvas = document.getElementById("threeCanvas");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0b0d16);
+
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+camera.position.set(5, 2, 7);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+const light = new THREE.HemisphereLight(0xffffff, 0x222222, 1);
+scene.add(light);
+
+const busGroup = new THREE.Group();
+scene.add(busGroup);
+
+// Build bus
+function buildBus() {
+  while (busGroup.children.length) busGroup.remove(busGroup.children[0]);
+
+  const m = models[modelSelect.value];
+  const geo = new THREE.BoxGeometry(m.length, m.height, m.width);
+  const mat = new THREE.MeshStandardMaterial({ color: exteriorColor.value });
+  const bus = new THREE.Mesh(geo, mat);
+  bus.position.y = 1.2;
+
+  busGroup.add(bus);
+}
+
+modelSelect.addEventListener("change", buildBus);
+exteriorColor.addEventListener("input", buildBus);
+
+// Render loop
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+buildBus();
